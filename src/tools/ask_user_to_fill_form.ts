@@ -18,19 +18,14 @@ export const ask_user_to_fill_form_config = {
                 .describe(
                     "JSON Schema for the form (react-jsonschema-form compatible)"
                 ),
-            ui_schema: z
-                .record(z.string(), z.any())
-                .optional()
-                .describe(
-                    "UI Schema for customizing form rendering (react-jsonschema-form format)"
-                ),
-            form_data: z
-                .record(z.string(), z.any())
-                .optional()
-                .describe("Initial form data values"),
         })
         .describe("Form configuration following react-jsonschema-form"),
     output: z.record(z.string(), z.any()).describe("用户填写的表单数据"),
+    interruptOn: {
+        ask_user_to_fill_form: {
+            allowedDecisions: ["respond"],
+        },
+    },
 } satisfies BaseAUK;
 
 export const ask_user_to_fill_form = tool(async (args) => {

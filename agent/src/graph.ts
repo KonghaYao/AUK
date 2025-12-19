@@ -15,6 +15,7 @@ import {
 } from "../../src/tools/wait_for_user_to_upload_file";
 import { visualize_data_with_chart } from "../../src/tools/visualize_data_with_chart";
 import { StateGraph, START } from "@langchain/langgraph";
+import { ask_user_to_fill_form, ask_user_to_fill_form_config } from "../../src";
 const State = AgentState.extend({});
 
 export const graph = new StateGraph(State)
@@ -34,12 +35,14 @@ export const graph = new StateGraph(State)
                 }),
                 wait_for_user_to_upload_file,
                 visualize_data_with_chart,
+                ask_user_to_fill_form,
             ],
             middleware: [
                 humanInTheLoopMiddleware({
                     interruptOn: {
                         ...ask_user_with_options_config.interruptOn,
                         ...wait_for_user_to_upload_file_config.interruptOn,
+                        ...ask_user_to_fill_form_config.interruptOn,
                     },
                 }),
             ],
