@@ -1,5 +1,6 @@
 // 基础工具类型定义
 import { z } from "zod";
+import { InterruptOnConfig } from "../middlewares/hitl";
 
 export interface BaseAUK {
     name: string;
@@ -8,8 +9,4 @@ export interface BaseAUK {
     output: any;
     interruptOn?: Record<string, InterruptOnConfig>;
 }
-export type InterruptOnConfig = {
-    allowedDecisions: ("respond" | "approve" | "edit" | "reject")[];
-    description?: string;
-    argsSchema?: z.ZodObject<any>;
-};
+export type { InterruptOnConfig };

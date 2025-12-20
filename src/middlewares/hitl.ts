@@ -510,13 +510,13 @@ export type HumanInTheLoopMiddlewareConfig = InferInteropZodInput<
  * @public
  */
 export function humanInTheLoopMiddleware(
-    options: NonNullable<HumanInTheLoopMiddlewareConfig>,
+    options: NonNullable<HumanInTheLoopMiddlewareConfig>
 ) {
     const createActionAndConfig = async (
         toolCall: ToolCall,
         config: InterruptOnConfig,
         state: AgentBuiltInState,
-        runtime: Runtime<unknown>,
+        runtime: Runtime<unknown>
     ): Promise<{
         actionRequest: ActionRequest;
         reviewConfig: ReviewConfig;
@@ -564,7 +564,7 @@ export function humanInTheLoopMiddleware(
     const processDecision = (
         decision: Decision,
         toolCall: ToolCall,
-        config: InterruptOnConfig,
+        config: InterruptOnConfig
     ): {
         revisedToolCall: ToolCall | null;
         toolMessage: ToolMessage | null;
@@ -585,12 +585,12 @@ export function humanInTheLoopMiddleware(
              */
             if (!editedAction || typeof editedAction.name !== "string") {
                 throw new Error(
-                    `Invalid edited action for tool "${toolCall.name}": name must be a string`,
+                    `Invalid edited action for tool "${toolCall.name}": name must be a string`
                 );
             }
             if (!editedAction.args || typeof editedAction.args !== "object") {
                 throw new Error(
-                    `Invalid edited action for tool "${toolCall.name}": args must be an object`,
+                    `Invalid edited action for tool "${toolCall.name}": args must be an object`
                 );
             }
 
@@ -616,7 +616,7 @@ export function humanInTheLoopMiddleware(
                 throw new Error(
                     `Tool call response for "${
                         toolCall.name
-                    }" must be a string, got ${typeof decision.message}`,
+                    }" must be a string, got ${typeof decision.message}`
                 );
             }
 
@@ -643,7 +643,7 @@ export function humanInTheLoopMiddleware(
                 throw new Error(
                     `Tool call response for "${
                         toolCall.name
-                    }" must be a string, got ${typeof decision.message}`,
+                    }" must be a string, got ${typeof decision.message}`
                 );
             }
 
@@ -658,11 +658,11 @@ export function humanInTheLoopMiddleware(
         }
 
         const msg = `Unexpected human decision: ${JSON.stringify(
-            decision,
+            decision
         )}. Decision type '${decision.type}' is not allowed for tool '${
             toolCall.name
         }'. Expected one of ${JSON.stringify(
-            allowedDecisions,
+            allowedDecisions
         )} based on the tool's configuration.`;
         throw new Error(msg);
     };
@@ -691,8 +691,14 @@ export function humanInTheLoopMiddleware(
                  */
                 const lastMessage = [...messages]
                     .reverse()
-                    .find((msg) => AIMessage.isInstance(msg)) as AIMessage;
-                if (!lastMessage || !lastMessage.tool_calls?.length) {
+                    .find((msg) => AIMessage.isInstance(msg)) as
+                    | BaseMessage
+                    | undefined;
+                if (
+                    !lastMessage ||
+                    !AIMessage.isInstance(lastMessage) ||
+                    !lastMessage.tool_calls?.length
+                ) {
                     return;
                 }
 
@@ -708,7 +714,7 @@ export function humanInTheLoopMiddleware(
                  */
                 const resolvedConfigs: Record<string, InterruptOnConfig> = {};
                 for (const [toolName, toolConfig] of Object.entries(
-                    config.interruptOn,
+                    config.interruptOn
                 )) {
                     if (typeof toolConfig === "boolean") {
                         if (toolConfig === true) {
@@ -757,7 +763,7 @@ export function humanInTheLoopMiddleware(
                             toolCall,
                             interruptConfig,
                             state,
-                            runtime,
+                            runtime
                         );
                     actionRequests.push(actionRequest);
                     reviewConfigs.push(reviewConfig);
@@ -775,7 +781,7 @@ export function humanInTheLoopMiddleware(
                  * Send interrupt and get response
                  */
                 const hitlResponse = (await interrupt(
-                    hitlRequest,
+                    hitlRequest
                 )) as HITLResponse;
                 const decisions = hitlResponse.decisions;
 
@@ -784,7 +790,7 @@ export function humanInTheLoopMiddleware(
                  */
                 if (!decisions || !Array.isArray(decisions)) {
                     throw new Error(
-                        "Invalid HITLResponse: decisions must be a non-empty array",
+                        "Invalid HITLResponse: decisions must be a non-empty array"
                     );
                 }
 
@@ -793,16 +799,16 @@ export function humanInTheLoopMiddleware(
                  */
                 if (decisions.length !== interruptToolCalls.length) {
                     throw new Error(
-                        `Number of human decisions (${decisions.length}) does not match number of hanging tool calls (${interruptToolCalls.length}).`,
+                        `Number of human decisions (${decisions.length}) does not match number of hanging tool calls (${interruptToolCalls.length}).`
                     );
                 }
 
                 const revisedToolCalls: ToolCall[] = [...autoApprovedToolCalls];
-                const artificialToolMessages: ToolMessage[] = [];
+                const artificialToolMessages: BaseMessage[] = [];
                 const hasHandledToolCalls = decisions.some(
                     (decision) =>
                         decision.type === "reject" ||
-                        decision.type === "respond",
+                        decision.type === "respond"
                 );
 
                 /**
@@ -816,7 +822,7 @@ export function humanInTheLoopMiddleware(
                     const { revisedToolCall, toolMessage } = processDecision(
                         decision,
                         toolCall,
-                        interruptConfig,
+                        interruptConfig
                     );
 
                     if (
@@ -833,7 +839,9 @@ export function humanInTheLoopMiddleware(
                         revisedToolCalls.push(revisedToolCall);
                     }
                     if (toolMessage) {
-                        artificialToolMessages.push(toolMessage);
+                        artificialToolMessages.push(
+                            toolMessage as unknown as BaseMessage
+                        );
                     }
                 }
 
@@ -848,7 +856,10 @@ export function humanInTheLoopMiddleware(
                     ? "model"
                     : undefined;
                 return {
-                    messages: [lastMessage, ...artificialToolMessages],
+                    messages: [
+                        lastMessage as BaseMessage,
+                        ...artificialToolMessages,
+                    ],
                     jumpTo,
                 };
             },

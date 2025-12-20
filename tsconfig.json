@@ -4,7 +4,8 @@
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,
-        "noEmit": true,
+        "declaration": true,
+        "outDir": "dist",
         "esModuleInterop": true,
         "module": "esnext",
         "moduleResolution": "bundler",
@@ -12,12 +13,13 @@
         "isolatedModules": true,
         "jsx": "preserve",
         "incremental": true,
+
         "plugins": [
             {
                 "name": "next"
             }
         ]
     },
-    "include": ["**/*.ts", "**/*.tsx"],
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
     "exclude": ["node_modules"]
 }
